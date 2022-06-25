@@ -11,9 +11,9 @@ function drawTable() {
             cell.appendChild(text);
             cell.onclick = (function() { 
                 if(isNaN(cell.innerHTML)) {
-                    console.log("BOMBA -> game over");
                     [...document.getElementsByClassName("btn_cover")].forEach(function(el) {
-                        el.parentNode.removeChild(el); });
+                        el.parentNode.removeChild(el); 
+                    });
                     document.getElementById("id_startGame_btn").innerHTML = `<i class="las la-sad-tear" style="color: red;"></i>`;
                     gameOver = 1;
                 } 
@@ -31,7 +31,6 @@ function setBombs() {
             iCell = Math.floor(Math.random() * 9);
         } while (isNaN(table.rows[iRow].cells[iCell].innerHTML));
         table.rows[iRow].cells[iCell].innerHTML = `<i class="las la-bomb" style="color: red;"></i>`;
-        console.log(iRow + " " + iCell);
     }
 }
 
@@ -42,45 +41,14 @@ function setNeighbours() {
         for (let iCell = 0; iCell < nrColumns; ++iCell) {
             if (isNaN(table.rows[iRow].cells[iCell].innerHTML)) {
                 console.log("bomba la " + iRow + " " + iCell);
-                if (iRow - 1 >= 0 && iCell - 1 >= 0 && !isNaN(table.rows[iRow-1].cells[iCell-1].innerHTML)) {
-                    //stanga sus
-                    let value = table.rows[iRow-1].cells[iCell-1].innerHTML;
-                    table.rows[iRow-1].cells[iCell-1].innerHTML = ++value;
-                }
-                if (iRow - 1 >= 0 && !isNaN(table.rows[iRow-1].cells[iCell].innerHTML)) {
-                    //sus
-                    let value = table.rows[iRow-1].cells[iCell].innerHTML;
-                    table.rows[iRow-1].cells[iCell].innerHTML = ++value;
-                }
-                if (iRow - 1 >= 0 && iCell + 1 < nrColumns && !isNaN(table.rows[iRow-1].cells[iCell+1].innerHTML)) {
-                    //dreapta sus
-                    let value = table.rows[iRow-1].cells[iCell+1].innerHTML;
-                    table.rows[iRow-1].cells[iCell+1].innerHTML = ++value;
-                }
-                if (iCell + 1 < nrColumns && !isNaN(table.rows[iRow].cells[iCell+1].innerHTML)) {
-                    //dreapta
-                    let value = table.rows[iRow].cells[iCell+1].innerHTML;
-                    table.rows[iRow].cells[iCell+1].innerHTML = ++value;
-                }
-                if (iRow + 1 < nrRows && iCell + 1 < nrColumns && !isNaN(table.rows[iRow+1].cells[iCell+1].innerHTML)) {
-                    //dreapta jos
-                    let value = table.rows[iRow+1].cells[iCell+1].innerHTML;
-                    table.rows[iRow+1].cells[iCell+1].innerHTML = ++value;
-                }
-                if (iRow + 1 < nrRows && !isNaN(table.rows[iRow+1].cells[iCell].innerHTML)) {
-                    //jos
-                    let value = table.rows[iRow+1].cells[iCell].innerHTML;
-                    table.rows[iRow+1].cells[iCell].innerHTML = ++value;
-                }
-                if (iRow + 1 < nrRows && iCell - 1 >= 0 && !isNaN(table.rows[iRow+1].cells[iCell-1].innerHTML)) {
-                    //stanga jos
-                    let value = table.rows[iRow+1].cells[iCell-1].innerHTML;
-                    table.rows[iRow+1].cells[iCell-1].innerHTML = ++value;
-                }
-                if (iCell - 1 >= 0 && !isNaN(table.rows[iRow].cells[iCell-1].innerHTML)) {
-                    //stanga
-                    let value = table.rows[iRow].cells[iCell-1].innerHTML;
-                    table.rows[iRow].cells[iCell-1].innerHTML = ++value;
+                const iX = [-1, -1, -1, 0, 1, 1, 1, 0];
+                const iY = [-1, 0, 1, 1, 1, 0, -1, -1];
+                for (let index = 0; index < iX.length; ++index) {
+                  if (iRow + iX[index] >= 0 && iRow + iX[index] < nrRows && iCell + iY[index] >= 0 && iCell + iY[index] < nrColumns && 
+                    !isNaN(table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML)) {
+                    let value = table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML;
+                    table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML = ++value;
+                  }
                 }
             }
         }
@@ -97,15 +65,20 @@ function setButtons() {
             let icon = document.createElement("i");
             icon.className = "lab la-font-awesome-flag";
             icon.style = "color: green; font-size: 32px";
-            btn.onclick = (function() { 
-                btn.parentNode.removeChild(btn);
+            btn.onclick = (function() {
+                if (btn.parentNode.innerText == 0) {
+                  console.log("nu avem bombe");
+                  btn.parentNode.removeChild(btn);
+                } else if (btn.parentNode.innerText > 0) {
+                  console.log("avem " + btn.parentNode.innerText + " bombe");
+                  btn.parentNode.removeChild(btn);
+                }
                 if (document.querySelectorAll('.btn_cover').length == 10 && gameOver == 0) {
                     document.getElementById('id_winner_h2').innerHTML = `<p>YOU WIN</p>`;
                 }
             });
             btn.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-                console.log("rightClick");
                 if (btn.hasChildNodes()) {
                     btn.removeChild(icon);
                     document.getElementById("id_nrBombs_b").innerHTML = 'Bombs: ' + ++nrBombs;
