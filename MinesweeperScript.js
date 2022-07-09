@@ -9,15 +9,6 @@ function drawTable() {
             let cell = row.insertCell();
             let text = document.createTextNode('0');
             cell.appendChild(text);
-            cell.onclick = (function() { 
-                if(isNaN(cell.innerHTML)) {
-                    [...document.getElementsByClassName("btn_cover")].forEach(function(el) {
-                        el.parentNode.removeChild(el); 
-                    });
-                    document.getElementById("id_startGame_btn").innerHTML = `<i class="las la-sad-tear" style="color: red;"></i>`;
-                    gameOver = 1;
-                } 
-            });
         }
     }
 }
@@ -44,11 +35,11 @@ function setNeighbours() {
                 const iX = [-1, -1, -1, 0, 1, 1, 1, 0];
                 const iY = [-1, 0, 1, 1, 1, 0, -1, -1];
                 for (let index = 0; index < iX.length; ++index) {
-                  if (iRow + iX[index] >= 0 && iRow + iX[index] < nrRows && iCell + iY[index] >= 0 && iCell + iY[index] < nrColumns && 
-                    !isNaN(table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML)) {
-                    let value = table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML;
-                    table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML = ++value;
-                  }
+                    if (iRow + iX[index] >= 0 && iRow + iX[index] < nrRows && iCell + iY[index] >= 0 && iCell + iY[index] < nrColumns && 
+                        !isNaN(table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML)) {
+                        let value = table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML;
+                        table.rows[iRow + iX[index]].cells[iCell + iY[index]].innerHTML = ++value;
+                    }
                 }
             }
         }
@@ -64,19 +55,7 @@ function setButtons() {
             btn.className = "btn_cover";
             let icon = document.createElement("i");
             icon.className = "lab la-font-awesome-flag";
-            icon.style = "color: green; font-size: 32px";
-            btn.onclick = (function() {
-                if (btn.parentNode.innerText == 0) {
-                  console.log("nu avem bombe");
-                  btn.parentNode.removeChild(btn);
-                } else if (btn.parentNode.innerText > 0) {
-                  console.log("avem " + btn.parentNode.innerText + " bombe");
-                  btn.parentNode.removeChild(btn);
-                }
-                if (document.querySelectorAll('.btn_cover').length == 10 && gameOver == 0) {
-                    document.getElementById('id_winner_h2').innerHTML = `<p>YOU WIN</p>`;
-                }
-            });
+            icon.style = "color: darkgreen; font-size: 32px";
             btn.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 if (btn.hasChildNodes()) {
@@ -93,6 +72,46 @@ function setButtons() {
 }
 
 setButtons();
+
+document.querySelectorAll('td').forEach(e => e.addEventListener("click", function() {
+    let x = e.parentNode.rowIndex, y = e.cellIndex;
+    if (table.rows[x].cells[y].firstChild?.tagName?.toLowerCase() === 'i' && table.rows[x].cells[y].lastChild?.tagName?.toLowerCase() === 'button') {
+        [...document.getElementsByClassName("btn_cover")].forEach(function(el) {
+          if (el?.tagName?.toLowerCase() === 'button') {
+            el.parentNode.removeChild(el);
+          }
+        });
+        document.getElementById("id_startGame_btn").innerHTML = `<i class="las la-sad-tear" style="color: red;"></i>`;
+        gameOver = 1;
+    } else if (table.rows[x].cells[y].lastChild?.tagName?.toLowerCase() === 'button') {
+        if (table.rows[x].cells[y].innerText == 0) {
+            table.rows[x].cells[y].removeChild(table.rows[x].cells[y].lastChild);
+            removeNullButtons(x, y);
+        } else {
+            table.rows[x].cells[y].removeChild(table.rows[x].cells[y].lastChild);
+        }
+    }
+    if (document.querySelectorAll('.btn_cover').length == 10 && gameOver == 0) {
+        document.getElementById('id_winner_h2').innerHTML = `<p>YOU WIN</p>`;
+    }
+}));
+
+function removeNullButtons(x, y) {
+    const iX = [-1, -1, -1, 0, 1, 1, 1, 0];
+    const iY = [-1, 0, 1, 1, 1, 0, -1, -1];
+    for (let index = 0; index < iX.length; ++index) {
+        let xIndex = x + iX[index], yIndex = y + iY[index];
+        if (xIndex >= 0 && xIndex < nrRows && yIndex >= 0 && yIndex < nrColumns && 
+            table.rows[xIndex].cells[yIndex].lastChild?.tagName?.toLowerCase() === 'button') {
+            if (table.rows[xIndex].cells[yIndex].innerText == 0) {
+                table.rows[xIndex].cells[yIndex].removeChild(table.rows[xIndex].cells[yIndex].lastChild);
+                removeNullButtons(xIndex, yIndex);
+            } else {
+                table.rows[xIndex].cells[yIndex].removeChild(table.rows[xIndex].cells[yIndex].lastChild);
+            }
+        }
+    }
+}
 
 function startGame() {
     document.location.reload();
